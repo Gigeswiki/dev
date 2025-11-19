@@ -1,1 +1,1 @@
-web: gunicorn main:app
+web: ./scripts/heroku_start.sh

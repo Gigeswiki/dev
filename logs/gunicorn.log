@@ -1,3 +1,0 @@
-
-Error: Error: '/var/log/gunicorn/error.log' isn't writable [PermissionError(13, 'Permission denied')]
-
