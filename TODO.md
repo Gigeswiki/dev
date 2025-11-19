@@ -1,13 +1,13 @@
 # TODO: SQLite to PostgreSQL Migration and Heroku Deployment
 
 ## 1. Create Full Dump Script
-- [ ] Create `full_dump_sqlite_to_postgres.py` to dump schema and data from SQLite, convert to PostgreSQL syntax, and write to `sqlite_structure_postgres.txt`.
+- [x] Create `full_dump_sqlite_to_postgres.py` to dump schema and data from SQLite, convert to PostgreSQL syntax, and write to `sqlite_structure_postgres.txt`.
 
 ## 2. Update .gitignore
 - [ ] Add `venv/` to `.gitignore` to exclude virtual environment.
 
 ## 3. Run Dump Script
-- [ ] Execute `python full_dump_sqlite_to_postgres.py` to generate the full PostgreSQL-compatible SQL dump.
+- [x] Execute `python full_dump_sqlite_to_postgres.py` to generate the full PostgreSQL-compatible SQL dump.
 
 ## 4. Fix Heroku Buildpack
 - [ ] Use Heroku CLI to set buildpack to Python only: `heroku buildpacks:set heroku/python -a <app-name>`.
