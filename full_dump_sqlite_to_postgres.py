@@ -1,7 +1,7 @@
 import sqlite3
 import re
 
-def convert_sqlite_to_postgres(sqlite_sql):
+def convert_sqlite_to_postgres(sqlite_sql: str) -> str:
     # Convert AUTOINCREMENT to SERIAL
     postgres_sql = re.sub(r'INTEGER PRIMARY KEY AUTOINCREMENT', 'BIGSERIAL PRIMARY KEY', sqlite_sql, flags=re.IGNORECASE)
     # Convert INTEGER to BIGINT for ids if needed, but keep as is for now
@@ -9,7 +9,7 @@ def convert_sqlite_to_postgres(sqlite_sql):
     postgres_sql = re.sub(r'created_at TEXT DEFAULT CURRENT_TIMESTAMP', 'created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP', postgres_sql, flags=re.IGNORECASE)
     return postgres_sql
 
-def dump_sqlite_to_postgres(db_path, output_file):
+def dump_sqlite_to_postgres(db_path: str, output_file: str) -> None:
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
@@ -51,7 +51,7 @@ def dump_sqlite_to_postgres(db_path, output_file):
                 col_names = [col[1] for col in columns]
 
                 for row in rows:
-                    values = []
+                    values: list[str] = []
                     for val in row:
                         if val is None:
                             values.append('NULL')

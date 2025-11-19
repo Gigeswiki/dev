@@ -16,6 +16,6 @@ def detect_device(user_agent: str | None) -> str:
 
 def detect_browser(user_agent: str | None) -> str:
     ua = parse(user_agent or "")
-    browser = ua.browser.family or "Bilinmiyor"
-    version = ua.browser.version_string or ""
-    return browser if not version else f"{browser} {version}"
+    browser = getattr(ua.browser, 'family', None) or "Bilinmiyor"
+    version = ".".join(str(v) for v in ua.browser.version if v is not None) if ua.browser.version else ""
+    return f"{browser} {version}" if version else browser

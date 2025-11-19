@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sqlite3
 from contextlib import contextmanager
-from typing import Any, Generator, Optional, Sequence
+from typing import Any, Generator, Optional, Sequence, Union
 
 try:
     from psycopg import connect as pg_connect  # type: ignore
@@ -153,14 +153,20 @@ def _ensure_schema(connection: Any) -> None:
         _ensure_schema_sqlite(connection)
 
 
-def _row_to_dict(row: Any) -> dict[str, Any]:
+def _row_to_dict(row: Union[sqlite3.Row, dict[str, Any], Any, None]) -> dict[str, Any]:
     if row is None:
         return {}
     if isinstance(row, dict):
-        return dict(row)  # Ensure we return a dict, not the original object
+        return {str(k): v for k, v in row.items()}  # Explicit type-safe dict construction
     # Handle sqlite3.Row or psycopg row objects
     try:
-        return dict(row)
+        # Convert row-like objects to dict with explicit typing
+        result: dict[str, Any] = {}
+        if hasattr(row, 'keys') and callable(row.keys):
+            for key in row.keys():
+                result[str(key)] = row[key]
+            return result
+        return dict(row)  # type: ignore[call-overload]
     except (TypeError, ValueError):
         return {}
 
