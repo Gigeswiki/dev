@@ -1,0 +1,68 @@
+{% extends "admin/layout.html" %}
+{% block title %}Ban Tablosu - CHANTE ADMIN SYSTEM{% endblock %}
+{% block head_scripts %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      setInterval(function() {
+        if (globalThis.jQuery) {
+          const baseUrl = globalThis.location.href.split('?')[0] + ' #tablo';
+          globalThis.jQuery('#tablo').load(baseUrl);
+        }
+      }, 3000);
+    });
+  </script>
+{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <h1 class="page-title">Ban Tablosu</h1>
+    <div>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Phishing</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Ban Tablosu</li>
+      </ol>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xl-12">
+      <div class="card">
+        <div class="card-body">
+          <div id="tablo" class="table-responsive">
+            <table class="table border text-nowrap text-md-nowrap table-borderless mb-0 table-mobile">
+              <thead>
+                <tr>
+                  <th>IP ADRESİ</th>
+                  <th>KONUM</th>
+                  <th>CİHAZ</th>
+                  <th>TARAYICI</th>
+                  <th>TARİH</th>
+                  <th>İŞLEM</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for ban in bans %}
+                  <tr>
+                    <td data-label="IP Adresi">{{ ban.ban }}</td>
+                    <td data-label="Konum">{{ ban.ulke }}</td>
+                    <td data-label="Cihaz">{{ ban.cihaz }}</td>
+                    <td data-label="Tarayıcı">{{ ban.tarayici }}</td>
+                    <td data-label="Tarih">{{ ban.date }}</td>
+                    <td data-label="İşlem">
+                      <form method="post" class="d-inline">
+                        <input type="hidden" name="ban_ip" value="{{ ban.ban }}">
+                        <button class="btn btn-sm btn-danger-gradient" title="Yasağı kaldır" aria-label="Yasağı kaldır" type="submit">
+                          <i class="fa-solid fa-trash"></i>
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                {% else %}
+                  <tr><td colspan="6" class="text-center">Ban kaydı bulunmuyor.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

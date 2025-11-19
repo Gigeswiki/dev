@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="tr" dir="ltr">
+  <head>
+    <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="CHANTE ADMIN SYSTEM">
+    <meta name="author" content="Chante">
+    <title>{% block title %}CHANTE ADMIN SYSTEM{% endblock %}</title>
+    <link id="style" href="{{ url_for('admin.static', filename='plugins/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('admin.static', filename='css/style.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('admin.static', filename='css/dark-style.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('admin.static', filename='css/skin-modes.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('admin.static', filename='css/icons.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('admin.static', filename='css/modern-dashboard.css') }}" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhV7jXKqG04eHceiP0boVWJ8lrUe9lcWDXv36r9ZJ7CZA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    {% block head_scripts %}{% endblock %}
+  </head>
+  <body class="app modern-layout ltr">
+    <div class="page">
+      <div class="page-main">
+        <header class="admin-header shadow-sm">
+          <div class="container-fluid header-shell">
+            <div class="brand-block">
+              <button class="btn icon-btn d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#adminNav" aria-controls="adminNav" aria-expanded="false" aria-label="Menüyü aç/kapat">
+                <i class="fa-solid fa-bars"></i>
+              </button>
+              <a class="brand" href="{{ url_for('admin.dashboard') }}">
+                <img src="{{ url_for('static', filename='img/1.png') }}" width="160" class="brand-logo" alt="logo">
+              </a>
+            </div>
+            <nav class="admin-nav collapse d-lg-flex" id="adminNav">
+              <a class="nav-link{% if request.endpoint == 'admin.dashboard' %} active{% endif %}" href="{{ url_for('admin.dashboard') }}">
+                <i class="fe fe-home"></i>
+                <span>Anasayfa</span>
+              </a>
+              <a class="nav-link{% if request.endpoint == 'admin.logs' %} active{% endif %}" href="{{ url_for('admin.logs') }}">
+                <i class="fa-solid fa-table-list"></i>
+                <span>Log Tablosu</span>
+              </a>
+              <a class="nav-link{% if request.endpoint == 'admin.bans' %} active{% endif %}" href="{{ url_for('admin.bans') }}">
+                <i class="fa-solid fa-circle-xmark"></i>
+                <span>Ban Tablosu</span>
+              </a>
+              <a class="nav-link{% if request.endpoint == 'admin.reklam_taramasi' %} active{% endif %}" href="{{ url_for('admin.reklam_taramasi') }}">
+                <i class="fe fe-chrome"></i>
+                <span>Reklam Taraması</span>
+                <span class="pill pill-new">Yeni</span>
+              </a>
+              <a class="nav-link{% if request.endpoint == 'admin.ip_blocker_panel' %} active{% endif %}" href="{{ url_for('admin.ip_blocker_panel') }}">
+                <i class="fa-solid fa-ban"></i>
+                <span>IP Engelleme</span>
+                <span class="pill pill-new">Yeni</span>
+              </a>
+              <a class="nav-link{% if request.endpoint == 'admin.ssl_panel' %} active{% endif %}" href="{{ url_for('admin.ssl_panel') }}">
+                <i class="fa-solid fa-lock"></i>
+                <span>SSL Yönetimi</span>
+                <span class="pill pill-new">Yeni</span>
+              </a>
+              <a class="nav-link{% if request.endpoint == 'admin.cloudflare_console' %} active{% endif %}" href="{{ url_for('admin.cloudflare_console') }}">
+                <i class="fa-solid fa-terminal"></i>
+                <span>Cloudflare Tüneli</span>
+                <span class="pill pill-new">Yeni</span>
+              </a>
+              <a class="nav-link{% if request.endpoint == 'admin.settings' %} active{% endif %}" href="{{ url_for('admin.settings') }}">
+                <i class="fe fe-settings"></i>
+                <span>Panel Ayarları</span>
+              </a>
+              <a class="nav-link" href="{{ url_for('admin.logout') }}">
+                <i class="fe fe-log-out"></i>
+                <span>Çıkış Yap</span>
+              </a>
+            </nav>
+            <div class="site-meta text-muted ms-lg-4 mt-3 mt-lg-0">
+              <div class="fw-semibold">{{ app_settings.site_name }}</div>
+              <div class="small">
+                <span class="badge bg-light text-dark me-1">Local IP: {{ app_settings.local_ip or '—' }}</span>
+                <span class="badge bg-light text-dark me-1">Public IP: {{ app_settings.public_ip or '—' }}</span>
+                <span class="badge bg-light text-dark">SSL: {{ app_settings.ssl_hosts or '—' }}</span>
+              </div>
+            </div>
+            <div class="header-actions">
+              <button class="icon-btn nav-link icon theme-layout nav-link-bg layout-setting" type="button" aria-label="Tema görünümünü değiştir">
+                <span class="dark-layout"><i class="fe fe-moon"></i></span>
+                <span class="light-layout"><i class="fe fe-sun"></i></span>
+              </button>
+              <button class="icon-btn nav-link icon full-screen-link nav-link-bg" type="button" aria-label="Tam ekran modu">
+                <i class="fe fe-minimize fullscreen-button"></i>
+              </button>
+            </div>
+          </div>
+        </header>
+        <main class="main-content">
+          <div class="main-container container-fluid">
+              {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                  <div class="row">
+                    <div class="col-12">
+                      {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                          {{ message }}
+                          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+                {% endif %}
+              {% endwith %}
+              {% block content %}{% endblock %}
+            </div>
+          </div>
+        </main>
+      </div>
+      <footer class="footer">
+        <div class="container">
+          <div class="row align-items-center flex-row-reverse">
+            <div class="col-md-12 col-sm-12 text-center">
+              Copyright © 2025 <a href="https://ayzio.com.tr" target="_blank" rel="noopener noreferrer">ayzio</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  <a href="#top" id="back-to-top" aria-label="Sayfanın başına dön"><i class="fa fa-angle-up"></i></a>
+    <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo2IeZ3YLhYei6wZ7IDhKF8XWUEcXKXo5RkR7RAg3E=" crossorigin="anonymous"></script>
+    <script src="{{ url_for('admin.static', filename='js/jquery.min.js') }}"></script>
+    <script src="{{ url_for('admin.static', filename='plugins/bootstrap/js/popper.min.js') }}"></script>
+    <script src="{{ url_for('admin.static', filename='plugins/bootstrap/js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('admin.static', filename='plugins/sidebar/sidebar.js') }}"></script>
+    <script src="{{ url_for('admin.static', filename='plugins/sidemenu/sidemenu.js') }}"></script>
+    <script src="{{ url_for('admin.static', filename='plugins/p-scroll/perfect-scrollbar.js') }}"></script>
+    <script src="{{ url_for('admin.static', filename='plugins/p-scroll/pscroll.js') }}"></script>
+    <script src="{{ url_for('admin.static', filename='plugins/p-scroll/pscroll-1.js') }}"></script>
+    <script src="{{ url_for('admin.static', filename='js/index1.js') }}"></script>
+    <script src="{{ url_for('admin.static', filename='js/themeColors.js') }}"></script>
+    <script src="{{ url_for('admin.static', filename='js/sticky.js') }}"></script>
+    <script src="{{ url_for('admin.static', filename='js/custom.js') }}"></script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

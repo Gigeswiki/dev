@@ -1,0 +1,36 @@
+{% extends "admin/layout.html" %}
+{% block title %}Reklam Taraması · CHANTE ADMIN SYSTEM{% endblock %}
+{% block head_scripts %}
+<style>
+  .reklam-frame {
+    border: 0;
+    min-height: 48rem;
+  }
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Reklam Taraması</h1>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Genel</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Reklam Taraması</li>
+    </ol>
+  </div>
+</div>
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body p-0">
+        <iframe
+          src="https://www.google.com/search?igu=1"
+          title="Reklam taraması arayüzü"
+          class="w-100 reklam-frame"
+          loading="lazy"
+          referrerpolicy="no-referrer"
+        ></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

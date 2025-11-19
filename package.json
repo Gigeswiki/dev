@@ -1,0 +1,28 @@
+{
+	"name": "traktor-ast-rte",
+	"version": "1.0.0",
+	"description": "Flask application on Cloudflare Workers",
+	"main": "worker.js",
+	"scripts": {
+		"build": "echo 'Building application...'",
+		"dev": "wrangler dev",
+		"deploy": "wrangler deploy",
+		"deploy:staging": "wrangler deploy --env staging",
+		"test": "python -m pytest tests/"
+	},
+	"keywords": [
+		"cloudflare",
+		"workers",
+		"flask",
+		"python"
+	],
+	"author": "",
+	"license": "MIT",
+	"devDependencies": {
+		"wrangler": "^4.47.0"
+	},
+	"engines": {
+		"node": ">=18.0.0",
+		"npm": ">=9.0.0"
+	}
+}

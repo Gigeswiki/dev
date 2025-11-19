@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="tr" dir="ltr">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="CHANTE ADMIN SYSTEM">
+    <title>CHANTE ADMIN SYSTEM</title>
+    <link id="style" href="{{ url_for('admin.static', filename='plugins/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('admin.static', filename='css/style.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('admin.static', filename='css/dark-style.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('admin.static', filename='css/transparent-style.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('admin.static', filename='css/skin-modes.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('admin.static', filename='css/icons.css') }}" rel="stylesheet" />
+  </head>
+  <body class="app sidebar-mini ltr">
+    <div class="login-img">
+      <div class="page">
+        <div class="col col-login mx-auto mt-7">
+          <div class="text-center">
+            <img src="{{ url_for('static', filename='img/1.png') }}" width="150" class="header-brand-img" alt="logo">
+          </div>
+        </div>
+        <div class="container-login100">
+          <div class="wrap-login100 p-6">
+            <form method="POST" class="login100-form">
+              <span class="login100-form-title pb-5">Hoş geldin</span>
+              <div class="panel panel-primary">
+                <div class="panel-body tabs-menu-body p-0 pt-2">
+                  <div class="tab-content">
+                    <div class="tab-pane active" id="tab6">
+                      <div class="wrap-input100 input-group mb-4">
+                        <input name="password" type="password" required class="input100 border-start-0 form-control ms-0" placeholder="Panel Şifresi">
+                      </div>
+                      {% if error %}
+                        <div class="alert alert-danger" role="alert">{{ error }}</div>
+                      {% endif %}
+                      <span>Not: Panel şifrenizi çalışmadığınız kişilerle paylaşmayın.</span>
+                      <div class="container-login100-form-btn mt-3">
+                        <button type="submit" class="login100-form-btn btn-primary">Giriş Yap</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="{{ url_for('admin.static', filename='js/jquery.min.js') }}"></script>
+    <script src="{{ url_for('admin.static', filename='plugins/bootstrap/js/popper.min.js') }}"></script>
+    <script src="{{ url_for('admin.static', filename='plugins/bootstrap/js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('admin.static', filename='js/show-password.min.js') }}"></script>
+    <script src="{{ url_for('admin.static', filename='plugins/p-scroll/perfect-scrollbar.js') }}"></script>
+    <script src="{{ url_for('admin.static', filename='js/themeColors.js') }}"></script>
+    <script src="{{ url_for('admin.static', filename='js/custom.js') }}"></script>
+  </body>
+</html>

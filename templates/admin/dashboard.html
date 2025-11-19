@@ -1,0 +1,170 @@
+{% extends "admin/layout.html" %}
+{% block title %}Anasayfa - CHANTE ADMIN SYSTEM{% endblock %}
+{% block head_scripts %}
+  <script>
+    $(document).ready(function() {
+        setInterval(function() {
+            $("#stats-log").load(window.location.href + " #stats-log");
+        }, 5000);
+    });
+    $(document).ready(function() {
+        setInterval(function() {
+            $("#stats-online").load(window.location.href + " #stats-online");
+        }, 5000);
+    });
+    $(document).ready(function() {
+        setInterval(function() {
+            $("#stats-ban").load(window.location.href + " #stats-ban");
+        }, 5000);
+    });
+    $(document).ready(function() {
+        setInterval(function() {
+            $("#stats-tebrik").load(window.location.href + " #stats-tebrik");
+        }, 5000);
+    });
+    $(document).ready(function() {
+        setInterval(function() {
+            $("#tablo").load(window.location.href + " #tablo");
+        }, 3000);
+    });
+  </script>
+{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <h1 class="page-title">Anasayfa</h1>
+    <div>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Panel</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Anasayfa</li>
+      </ol>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-6 col-md-6 col-sm-12 col-xl-3">
+      <div class="card overflow-hidden">
+        <div class="card-body" id="stats-log">
+          <div class="d-flex">
+            <div class="mt-2">
+              <h6><i class="fe fe-credit-card text-secondary"></i> Log Sayısı</h6>
+              <h2 class="mb-0 number-font">{{ stats.logs }}</h2>
+            </div>
+            <div class="ms-auto">
+              <div class="chart-wrapper mt-1"><canvas class="h-8 w-9 chart-dropshadow"></canvas></div>
+            </div>
+          </div>
+          <span class="text-muted fs-12">Toplam <span class="text-secondary">log</span> adedi</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6 col-md-6 col-sm-12 col-xl-3">
+      <div class="card overflow-hidden">
+        <div class="card-body" id="stats-online">
+          <div class="d-flex">
+            <div class="mt-2">
+              <h6><i class="fe fe-wifi text-green"></i> Çevrimiçi Sayısı</h6>
+              <h2 class="mb-0 number-font">{{ stats.online }}</h2>
+            </div>
+            <div class="ms-auto">
+              <div class="chart-wrapper mt-1"><canvas class="h-8 w-9 chart-dropshadow"></canvas></div>
+            </div>
+          </div>
+          <span class="text-muted fs-12">Aktif <span class="text-green">ziyaretçiler</span></span>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6 col-md-6 col-sm-12 col-xl-3">
+      <div class="card overflow-hidden">
+        <div class="card-body" id="stats-ban">
+          <div class="d-flex">
+            <div class="mt-2">
+              <h6><i class="fe fe-alert-triangle text-red"></i> Yasaklanan Sayısı</h6>
+              <h2 class="mb-0 number-font">{{ stats.bans }}</h2>
+            </div>
+            <div class="ms-auto">
+              <div class="chart-wrapper mt-1"><canvas class="h-8 w-9 chart-dropshadow"></canvas></div>
+            </div>
+          </div>
+          <span class="text-muted fs-12">Banlanan <span class="text-red">ziyaretçiler</span></span>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6 col-md-6 col-sm-12 col-xl-3">
+      <div class="card overflow-hidden">
+        <div class="card-body" id="stats-tebrik">
+          <div class="d-flex">
+            <div class="mt-2">
+              <h6><i class="fe fe-dollar-sign text-yellow"></i> Tebriklenen Sayısı</h6>
+              <h2 class="mb-0 number-font">{{ stats.tebrik }}</h2>
+            </div>
+            <div class="ms-auto">
+              <div class="chart-wrapper mt-1"><canvas class="h-8 w-9 chart-dropshadow"></canvas></div>
+            </div>
+          </div>
+          <span class="text-muted fs-12">Tebrik sayfasında olan <span class="text-yellow">ziyaretçiler</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xl-6 col-lg-6 col-md-12">
+      <div class="card">
+        <div class="card-header"><h4 class="card-title fw-semibold">Panele Giriş Yapanlar</h4></div>
+        <div class="card-body">
+          <div id="tablo" class="table-responsive">
+            <table class="table border text-nowrap text-md-nowrap table-striped mb-0">
+              <thead>
+                <tr>
+                  <th>IP ADRESİ</th>
+                  <th>DURUM</th>
+                  <th>TARAYICI</th>
+                  <th>TARİH</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for user in panel_users %}
+                  <tr>
+                    <td><strong>{{ user.ip }}</strong></td>
+                    <td><strong>{{ user.durum }}</strong></td>
+                    <td><strong>{{ user.tarayici }}</strong></td>
+                    <td><strong>{{ user.tarih }}</strong></td>
+                  </tr>
+                {% else %}
+                  <tr><td colspan="4" class="text-center">Kayıt yok.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-6 col-lg-6 col-md-12">
+      <div class="card">
+        <div class="card-header"><h4 class="card-title fw-semibold">Tarayıcı Kullanımı</h4></div>
+        <div class="card-body">
+          {% set browsers = [
+            ('Google Chrome', 'chrome.svg', 'bg-primary'),
+            ('Opera', 'opera.svg', 'bg-secondary'),
+            ('Internet Explorer', 'ie.svg', 'bg-success'),
+            ('Mozilla Firefox', 'firefox.svg', 'bg-danger'),
+            ('Safari', 'safari.svg', 'bg-info')
+          ] %}
+          {% for name, image, bar_class in browsers %}
+            <div class="row mb-4">
+              <div class="col-sm-2 col-lg-3 col-xl-3 col-xxl-2 mb-sm-0 mb-3">
+                <img src="{{ url_for('admin.static', filename='images/browsers/' ~ image) }}" class="img-fluid" alt="{{ name }} logosu">
+              </div>
+              <div class="col-sm-10 col-lg-9 col-xl-9 col-xxl-10 ps-sm-0">
+                <div class="d-flex align-items-end justify-content-between mb-1">
+                  <h6 class="mb-1">{{ name.split(' ')[0] }}</h6>
+                  <h6 class="fw-semibold mb-1">{{ stats.browsers.get(name, 0) }} Kişi</h6>
+                </div>
+                {% set browser_count = stats.browsers.get(name, 0) %}
+                <progress class="progress w-100 {{ bar_class }}" max="{{ stats.logs if stats.logs else 1 }}" value="{{ browser_count }}" aria-label="{{ name }} kullanım oranı"></progress>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
