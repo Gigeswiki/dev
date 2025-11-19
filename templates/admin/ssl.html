@@ -1,0 +1,130 @@
+{% extends "admin/layout.html" %}
+{% block title %}SSL Yönetimi - CHANTE ADMIN SYSTEM{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h4 class="card-title mb-3">Cloudflare SSL Durumu</h4>
+        <p class="text-muted mb-0">
+          Bu sayfadan Cloudflare üzerindeki mevcut sertifika paketlerini görüntüleyebilir ve yeni gelişmiş SSL sertifikası talep edebilirsiniz.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if cf_error %}
+  <div class="row">
+    <div class="col-12">
+      <div class="alert alert-danger" role="alert">
+        <strong>Cloudflare API yanıt vermedi:</strong> {{ cf_error }}<br>
+        Lütfen .env dosyanızdaki <code>CLOUDFLARE_* </code> ayarlarını ve ağ bağlantınızı kontrol edin.
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+{% if packs %}
+  <div class="row">
+    {% for pack in packs %}
+      <div class="col-xl-6 col-lg-6 col-md-12">
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-light">
+            <h5 class="mb-0 text-uppercase">{{ pack.type }} sertifika</h5>
+          </div>
+          <div class="card-body">
+            <p class="mb-2">
+              <span class="badge {% if pack.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">
+                {{ pack.status|upper }}
+              </span>
+              <span class="ms-2 text-muted">Oluşturma: {{ pack.created_on or '—' }}</span>
+            </p>
+            <p class="mb-1"><strong>Hostlar:</strong> {{ pack.hosts|join(', ') }}</p>
+            <p class="mb-1"><strong>Bitiş:</strong> {{ pack.expires_on or '—' }}</p>
+            <div class="mt-3">
+              <h6 class="fw-bold">Sertifikalar</h6>
+              <div class="table-responsive">
+                <table class="table table-sm">
+                  <thead>
+                    <tr>
+                      <th>Issuer</th>
+                      <th>İmza</th>
+                      <th>Durum</th>
+                      <th>Bitiş</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for cert in pack.certificates %}
+                      <tr>
+                        <td>{{ cert.issuer }}</td>
+                        <td>{{ cert.signature }}</td>
+                        <td>{{ cert.status }}</td>
+                        <td>{{ cert.expires_on }}</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% elif not cf_error %}
+  <div class="row">
+    <div class="col-12">
+      <div class="alert alert-info" role="alert">
+        Bu bölge için Cloudflare sertifika paketi bulunamadı.
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card shadow-sm">
+      <div class="card-header bg-white">
+        <h5 class="mb-0">Yeni Gelişmiş Sertifika Talebi</h5>
+      </div>
+      <div class="card-body">
+        {% if not has_cloudflare_config %}
+          <div class="alert alert-warning" role="alert">
+            Lütfen .env dosyanıza <code>CLOUDFLARE_ZONE_ID</code>, <code>CLOUDFLARE_AUTH_EMAIL</code> ve <code>CLOUDFLARE_AUTH_KEY</code> bilgilerini ekleyin.
+          </div>
+        {% endif %}
+        <form method="post" class="row gy-3">
+          <input type="hidden" name="action" value="issue">
+          <div class="col-12">
+            <label class="form-label">Host Listesi</label>
+            <textarea name="hosts" class="form-control" rows="3" placeholder="example.com, api.example.com">{{ request.form.hosts or default_hosts }}</textarea>
+            <small class="text-muted">Virgülle ayrılmış host adları. Boş bırakırsanız .env dosyasındaki <code>CLOUDFLARE_SSL_HOSTS</code> kullanılır.</small>
+          </div>
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary" {% if not has_cloudflare_config %}disabled{% endif %}>
+              <i class="fa-solid fa-plus"></i>
+              Sertifika Talep Et
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h6 class="fw-bold">Gerekli Ortam Değişkenleri</h6>
+        <ul class="list-unstyled small">
+          <li><code>CLOUDFLARE_AUTH_EMAIL</code></li>
+          <li><code>CLOUDFLARE_AUTH_KEY</code> veya <code>CLOUDFLARE_API_TOKEN</code></li>
+          <li><code>CLOUDFLARE_ZONE_ID</code></li>
+          <li><code>CLOUDFLARE_SSL_HOSTS</code></li>
+        </ul>
+        <p class="mb-0 small text-muted">Bilgiler doğrudan Cloudflare API'sine gönderilir ve veri tabanında saklanmaz.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,172 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}IP Engelleme - CHANTE ADMIN SYSTEM{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">IP Engelleme Sistemi</h1>
+  <div>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Anasayfa</a></li>
+      <li class="breadcrumb-item active" aria-current="page">IP Engelleme</li>
+    </ol>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Tekil IP Engelle</h3>
+      </div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('admin.ip_blocker_panel') }}">
+          <input type="hidden" name="action" value="add_ip">
+          <div class="mb-3">
+            <label for="ip_address" class="form-label">IP Adresi</label>
+            <input type="text" class="form-control" id="ip_address" name="ip_address" placeholder="örn: 185.67.35.100" required>
+            <small class="form-text text-muted">Engellemek istediğiniz IP adresini girin</small>
+          </div>
+          <button type="submit" class="btn btn-danger">
+            <i class="fa-solid fa-ban"></i> IP Engelle
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">IP Aralığı Engelle (CIDR)</h3>
+      </div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('admin.ip_blocker_panel') }}">
+          <input type="hidden" name="action" value="add_range">
+          <div class="mb-3">
+            <label for="cidr" class="form-label">CIDR Aralığı</label>
+            <input type="text" class="form-control" id="cidr" name="cidr" placeholder="örn: 185.67.32.0/22" required>
+            <small class="form-text text-muted">CIDR formatında IP aralığı girin (örn: 192.168.1.0/24)</small>
+          </div>
+          <button type="submit" class="btn btn-danger">
+            <i class="fa-solid fa-ban"></i> Aralık Engelle
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-4">
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Engelli IP Aralıkları</h3>
+        <span class="badge bg-danger ms-2">{{ blocked_ranges|length }}</span>
+      </div>
+      <div class="card-body">
+        {% if blocked_ranges %}
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead>
+                <tr>
+                  <th>CIDR Aralığı</th>
+                  <th>Açıklama</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for range in blocked_ranges %}
+                  <tr>
+                    <td><code>{{ range }}</code></td>
+                    <td>
+                      {% if '185.67.32.0/22' in range %}
+                        <span class="badge bg-warning">BTK (Bilgi Teknolojileri ve İletişim Kurumu)</span>
+                      {% elif '185.67.35.0/24' in range %}
+                        <span class="badge bg-warning">BTK BTD Özel Bloğu</span>
+                      {% else %}
+                        <span class="badge bg-secondary">Özel Engel</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="alert alert-info mb-0">
+            <i class="fa-solid fa-info-circle"></i> Henüz engellenmiş IP aralığı bulunmuyor.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Engelli Tekil IP'ler</h3>
+        <span class="badge bg-danger ms-2">{{ blocked_ips|length }}</span>
+      </div>
+      <div class="card-body">
+        {% if blocked_ips %}
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead>
+                <tr>
+                  <th>IP Adresi</th>
+                  <th>İşlemler</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for ip in blocked_ips %}
+                  <tr>
+                    <td><code>{{ ip }}</code></td>
+                    <td>
+                      <form method="post" action="{{ url_for('admin.ip_blocker_panel') }}" class="d-inline">
+                        <input type="hidden" name="action" value="remove_ip">
+                        <input type="hidden" name="ip_address" value="{{ ip }}">
+                        <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Bu IP engelini kaldırmak istediğinize emin misiniz?')">
+                          <i class="fa-solid fa-circle-check"></i> Engeli Kaldır
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="alert alert-info mb-0">
+            <i class="fa-solid fa-info-circle"></i> Henüz engellenmiş tekil IP bulunmuyor.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header bg-info text-white">
+        <h3 class="card-title mb-0"><i class="fa-solid fa-info-circle"></i> Bilgilendirme</h3>
+      </div>
+      <div class="card-body">
+        <h5>IP Engelleme Sistemi Hakkında</h5>
+        <ul>
+          <li><strong>BTK IP Aralıkları:</strong> 185.67.32.0/22 ve 185.67.35.0/24 aralıkları otomatik olarak engellenmiştir.</li>
+          <li><strong>CIDR Formatı:</strong> IP aralıklarını CIDR formatında giriniz (örn: 192.168.1.0/24)</li>
+          <li><strong>Cloudflare Kullanıyorsanız:</strong> Sistem Cloudflare'den gelen gerçek IP'yi otomatik algılar (CF-Connecting-IP)</li>
+          <li><strong>Engelli IP Erişimi:</strong> Engellenmiş IP'lerden gelen istekler 403 Forbidden hatası alır</li>
+          <li><strong>Güvenlik:</strong> Sistem başlatıldığında engeller otomatik olarak aktif hale gelir</li>
+        </ul>
+        
+        <div class="alert alert-warning mt-3">
+          <i class="fa-solid fa-exclamation-triangle"></i> 
+          <strong>Önemli:</strong> Cloudflare API token'ınız mesajda görünüyor. Güvenlik için bu token'ı mutlaka değiştirin!
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

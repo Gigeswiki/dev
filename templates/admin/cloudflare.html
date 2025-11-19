@@ -1,0 +1,289 @@
+{% extends "admin/layout.html" %}
+{% block title %}Cloudflare Tünel Konsolu{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <h1 class="page-title">Cloudflare Tünel Konsolu</h1>
+    <div>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Panel</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Cloudflare Tüneli</li>
+      </ol>
+      <div class="row g-3 mt-1">
+        <div class="col-xl-6">
+          <div class="card h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                  <h5 class="card-title mb-1">Tünel ve VPC Servis Bilgileri</h5>
+                  <small class="text-muted">Kaydedilen bilgiler görsel panellerde ve komut kılavuzlarında kullanılır.</small>
+                </div>
+                <span class="badge bg-warning text-dark text-uppercase">{{ cloudflare_info.status_note or 'Durum Notu Yok' }}</span>
+              </div>
+              <form method="POST" class="row g-3">
+                <input type="hidden" name="action" value="metadata">
+                <div class="col-sm-6">
+                  <label class="form-label">Tünel Adı</label>
+                  <input type="text" class="form-control" name="tunnel_name" value="{{ cloudflare_info.tunnel_name }}" placeholder="edev">
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label">Virtual Network</label>
+                  <input type="text" class="form-control" name="virtual_network" value="{{ cloudflare_info.virtual_network }}" placeholder="default">
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label">Tunnel ID</label>
+                  <input type="text" class="form-control" name="tunnel_id" value="{{ cloudflare_info.tunnel_id }}" placeholder="ec73d3d3-...">
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label">Connector ID</label>
+                  <input type="text" class="form-control" name="connector_id" value="{{ cloudflare_info.connector_id }}" placeholder="1735...">
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label">VPC Service ID</label>
+                  <input type="text" class="form-control" name="service_id" value="{{ cloudflare_info.service_id }}" placeholder="019a...">
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label">Route CIDR</label>
+                  <input type="text" class="form-control" name="route_cidr" value="{{ cloudflare_info.route_cidr }}" placeholder="192.168.90.0/24">
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label">Route Açıklaması</label>
+                  <input type="text" class="form-control" name="route_desc" value="{{ cloudflare_info.route_desc }}" placeholder="devle">
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label">IPv6 Çıkış Adresi</label>
+                  <input type="text" class="form-control" name="ipv6_hint" value="{{ cloudflare_info.ipv6_hint }}">
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Durum Notu</label>
+                  <textarea name="status_note" rows="2" class="form-control" placeholder="Degraded → route doğrulaması gerekiyor">{{ cloudflare_info.status_note }}</textarea>
+                </div>
+                <div class="col-12 d-flex justify-content-end">
+                  <button class="btn btn-primary" type="submit">Bilgileri Kaydet</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-6">
+          <div class="card h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title mb-0">İşlem Akışı & Görsel Kılavuz</h5>
+                <span class="badge {% if cloudflare_info.status_note and 'degrad' in cloudflare_info.status_note|lower %}bg-danger{% else %}bg-success{% endif %}">
+                  {% if cloudflare_info.status_note %}{{ cloudflare_info.status_note }}{% else %}Healthy{% endif %}
+                </span>
+              </div>
+              <ol class="timeline list-unstyled mb-4">
+                <li class="mb-3">
+                  <div class="fw-semibold">1. IPv6 doğrulaması</div>
+                  <small class="text-muted">Bağlı olduğun ağ adaptöründe IPv6 adresini <code>{{ cloudflare_info.ipv6_hint }}</code> olarak tanımla.</small>
+                </li>
+                <li class="mb-3">
+                  <div class="fw-semibold">2. Route ekle</div>
+                  <small class="text-muted">Aşağıdaki komutla {{ cloudflare_info.route_cidr or 'CIDR' }} bloğunu {{ cloudflare_info.tunnel_name or 'tünel' }} tüneline ata.</small>
+                </li>
+                <li class="mb-3">
+                  <div class="fw-semibold">3. Worker binding</div>
+                  <small class="text-muted">Wrangler yapılandırmasında VPC Service ID'yi güncel tut.</small>
+                </li>
+                <li>
+                  <div class="fw-semibold">4. Sağlık kontrolü</div>
+                  <small class="text-muted">"Durum Kontrol" butonunu kullan veya Cloudflare dashboard'da tünel statüsünü izle.</small>
+                </li>
+              </ol>
+              <div class="mb-3">
+                <div class="d-flex justify-content-between small text-uppercase text-muted">
+                  <span>cloudflared komutu</span>
+                  <span>Tünel → Route</span>
+                </div>
+                <pre class="bg-light rounded p-2 small text-break mb-0">cloudflared tunnel route ip add {{ cloudflare_info.route_cidr or '192.168.90.0/24' }} {{ cloudflare_info.tunnel_name or 'edev' }}</pre>
+              </div>
+              <div>
+                <div class="d-flex justify-content-between small text-uppercase text-muted">
+                  <span>wrangler.jsonc</span>
+                  <span>VPC binding</span>
+                </div>
+                <pre class="bg-dark text-white rounded p-2 small mb-0">
+    </div>
+  </div>
+  <div class="row g-3">
+    <div class="col-lg-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">Servis Özeti</h5>
+          {% if latest_log %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+            <p class="mb-1 small text-muted">Son Komut: {{ latest_log.command }}</p>
+            <div class="d-flex align-items-center mb-2">
+              <span class="badge {% if latest_log.status == 'success' %}bg-success{% else %}bg-danger{% endif %} me-2 text-uppercase">{{ latest_log.status or 'bilinmiyor' }}</span>
+              <span class="small text-muted">{{ latest_log.created_at }}</span>
+            </div>
+            {% if latest_log.stdout %}
+              <pre class="bg-light rounded p-2 small mb-0 text-break">{{ latest_log.stdout }}</pre>
+            {% elif latest_log.stderr %}
+              <pre class="bg-dark text-white rounded p-2 small mb-0 text-break">{{ latest_log.stderr }}</pre>
+            {% else %}
+              <p class="text-muted">Herhangi bir çıktı kaydedilmedi.</p>
+            {% endif %}
+          {% else %}
+            <p class="text-muted">Henüz herhangi bir cloudflared log kaydı bulunmuyor.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-8">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">Konnektör İşlemleri</h5>
+          <form method="POST" class="mb-3">
+            <input type="hidden" name="action" value="install">
+            <label for="tunnelToken" class="form-label">Cloudflare Tunnel Token</label>
+            <div class="input-group mb-2">
+              <textarea id="tunnelToken" name="tunnel_token" class="form-control" rows="2" placeholder="eyJhIjoi..." required></textarea>
+              <button class="btn btn-success" type="submit">Konnektörü Kur</button>
+            </div>
+            <small class="text-muted">Token Cloudflare Zero Trust &gt; Tunnels bölümünden alınır. Komut çıktıları aşağıdaki log tablosuna kaydedilir.</small>
+          </form>
+          <form method="POST" class="mb-3">
+            <input type="hidden" name="action" value="status">
+            <button class="btn btn-outline-primary" type="submit">Durum Kontrol Komutlarını Çalıştır</button>
+          </form>
+          <form method="POST">
+            <input type="hidden" name="action" value="custom">
+            <label for="customCommand" class="form-label">Özel Komut</label>
+            <textarea id="customCommand" name="custom_command" class="form-control mb-2" rows="2" placeholder="sudo systemctl status cloudflared" required></textarea>
+            <div class="d-flex justify-content-between align-items-center">
+              <small class="text-muted">Komut /bin/sh -c ile çalıştırılır, çıktı loglara kaydedilir.</small>
+              <button class="btn btn-outline-dark" type="submit">Komutu Çalıştır</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row g-3 mt-1">
+    <div class="col-xl-6">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <h5 class="card-title mb-1">DNSSEC DS Kayıt Yönetimi</h5>
+              <small class="text-muted">Cloudflare ▸ DNS ▸ DNSSEC ekranındaki değerleri buradan saklayın.</small>
+            </div>
+            <span class="badge bg-secondary text-uppercase">DS RECORD</span>
+          </div>
+          <form method="POST" class="row g-3">
+            <input type="hidden" name="action" value="dnssec">
+            <div class="col-sm-6">
+              <label class="form-label">Domain</label>
+              <input type="text" class="form-control" name="dnssec_domain" value="{{ dnssec_info.domain }}" required>
+            </div>
+            <div class="col-sm-3">
+              <label class="form-label">Key Tag</label>
+              <input type="text" class="form-control" name="dnssec_key_tag" value="{{ dnssec_info.key_tag }}">
+            </div>
+            <div class="col-sm-3">
+              <label class="form-label">Flags</label>
+              <input type="text" class="form-control" name="dnssec_flags" value="{{ dnssec_info.flags }}">
+            </div>
+            <div class="col-sm-4">
+              <label class="form-label">Algorithm</label>
+              <input type="text" class="form-control" name="dnssec_algorithm" value="{{ dnssec_info.algorithm }}">
+            </div>
+            <div class="col-sm-4">
+              <label class="form-label">Digest Type</label>
+              <input type="text" class="form-control" name="dnssec_digest_type" value="{{ dnssec_info.digest_type }}">
+            </div>
+            <div class="col-sm-4">
+              <label class="form-label">Digest</label>
+              <input type="text" class="form-control" name="dnssec_digest" value="{{ dnssec_info.digest }}">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Public Key (opsiyonel)</label>
+              <textarea class="form-control" name="dnssec_public_key" rows="2">{{ dnssec_info.public_key }}</textarea>
+              <small class="text-muted">Registrar yalnızca ilk dört alanı istese bile kalan bilgileri burada saklayabilirsiniz.</small>
+            </div>
+            <div class="col-12 d-flex justify-content-end">
+              <button class="btn btn-outline-primary" type="submit">DS Kaydını Kaydet</button>
+            </div>
+          </form>
+          <div class="mt-3">
+            <div class="d-flex justify-content-between small text-uppercase text-muted">
+              <span>Doğrulama Komutu</span>
+              <span>DNSSEC Check</span>
+            </div>
+            <pre class="bg-light rounded p-2 small mb-0">dig +dnssec {{ dnssec_info.domain|default('example.com.', true) }} @1.1.1.1</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-6">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="card-title mb-0">Workers VPC Yayına Alma Adımları</h5>
+            <span class="badge bg-info text-dark text-uppercase">VPC SERVICE</span>
+          </div>
+          <ol class="list-group list-group-numbered mb-3">
+            <li class="list-group-item">
+              `/admin/cloudflare` → Tünel bilgilerini doğrula ({{ cloudflare_info.tunnel_name or 'tünel' }}, {{ cloudflare_info.route_cidr or 'CIDR' }}).
+            </li>
+            <li class="list-group-item">
+              Zero Trust ▸ Tunnels menüsünden {{ cloudflare_info.tunnel_name or 'tünel' }} bağlantısının **Connected** olduğundan emin ol.
+            </li>
+            <li class="list-group-item">
+              Aşağıdaki komutla route ekle veya yenile:
+              <pre class="bg-light rounded p-2 small mt-2 mb-0">cloudflared tunnel route ip add {{ cloudflare_info.route_cidr or '192.168.90.0/24' }} {{ cloudflare_info.tunnel_name or 'edev' }}</pre>
+            </li>
+            <li class="list-group-item">
+              `wrangler.jsonc` dosyasında VPC binding'inin güncel olduğundan emin ol (Service ID: {{ cloudflare_info.service_id or 'SERVICE_ID' }}).
+            </li>
+            <li class="list-group-item">
+              `npx wrangler dev --remote` ile test et, ardından `npx wrangler deploy` ile yayına çık.
+            </li>
+          </ol>
+          <div class="alert alert-secondary small mb-0" role="alert">
+            Routes ekranı "Degraded" gösteriyorsa IPv6 adaptör adresini <code>{{ cloudflare_info.ipv6_hint }}</code> olarak güncelleyin ve tekrar ölçün.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card mt-4">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h5 class="card-title mb-0">Canlı Log Akışı</h5>
+          <small class="text-muted">En son 50 komut çıktısı. Yeni işlemler sonrası sayfayı yenileyin.</small>
+        </div>
+        <a class="btn btn-sm btn-light" href="{{ url_for('admin.cloudflare_console') }}">Yenile</a>
+      </div>
+      <div class="terminal-window p-3 bg-black text-white rounded">
+        {% if logs %}
+          {% for log in logs %}
+            <div class="mb-3">
+              <div class="d-flex justify-content-between flex-wrap small text-secondary">
+                <span>#{{ log.id }} • {{ log.created_at }}</span>
+                <span class="text-uppercase {% if log.status == 'success' %}text-success{% else %}text-danger{% endif %}">{{ log.status or '—' }}</span>
+              </div>
+              <div class="fw-semibold text-info">$ {{ log.command }}</div>
+              {% if log.stdout %}
+                <pre class="mt-1 mb-0 text-white-50">{{ log.stdout }}</pre>
+              {% endif %}
+              {% if log.stderr %}
+                <pre class="mt-1 mb-0 text-danger">{{ log.stderr }}</pre>
+              {% endif %}
+            </div>
+            <hr class="border-secondary opacity-50">
+          {% endfor %}
+        {% else %}
+          <p class="text-muted mb-0">Log kaydı bulunamadı.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

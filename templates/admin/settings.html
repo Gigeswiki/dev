@@ -1,0 +1,174 @@
+{% extends "admin/layout.html" %}
+{% block title %}Panel Ayarları - CHANTE ADMIN SYSTEM{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <h1 class="page-title">Panel Ayarları</h1>
+    <div>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Ayarlar</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Panel Ayarları</li>
+      </ol>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-sm-12 col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <form method="POST" class="needs-validation" novalidate>
+            <input type="hidden" name="form" value="password">
+            <div class="mb-3">
+              <label for="panelPassword" class="form-label">Panel Şifresi</label>
+              <div class="input-group">
+                <input type="password" class="form-control" id="panelPassword" name="password" minlength="6" maxlength="26" value="{{ site.pass or '' }}" required>
+                <button class="btn btn-outline-secondary" type="button" onclick="navigator.clipboard.writeText(document.getElementById('panelPassword').value)">Kopyala</button>
+              </div>
+            </div>
+            <button class="btn btn-primary w-100" type="submit">Güncelle</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-12 col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <form method="POST" class="needs-validation" novalidate>
+            <input type="hidden" name="form" value="tutar">
+            <div class="mb-3">
+              <label for="posAmount" class="form-label">Sanal POS Tutarı</label>
+              <input type="text" class="form-control" id="posAmount" name="tutar" value="{{ site.tutar or '' }}" required>
+            </div>
+            <button class="btn btn-primary w-100" type="submit">Güncelle</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-12 col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <form method="POST" class="needs-validation" novalidate>
+            <input type="hidden" name="form" value="site_info">
+            <div class="mb-3">
+              <label for="siteName" class="form-label">Site Adı</label>
+              <input type="text" class="form-control" id="siteName" name="site_name" value="{{ app_settings.site_name or '' }}" required>
+            </div>
+            <div class="mb-3">
+              <label for="localIp" class="form-label">Local IP</label>
+              <input type="text" class="form-control" id="localIp" name="local_ip" value="{{ app_settings.local_ip or '' }}">
+            </div>
+            <div class="mb-3">
+              <label for="publicIp" class="form-label">Public IP</label>
+              <input type="text" class="form-control" id="publicIp" name="public_ip" value="{{ app_settings.public_ip or '' }}">
+            </div>
+            <div class="mb-3">
+              <label for="sslHosts" class="form-label">SSL Host Listesi</label>
+              <textarea class="form-control" id="sslHosts" name="ssl_hosts" rows="2" placeholder="example.com, api.example.com">{{ app_settings.ssl_hosts or '' }}</textarea>
+              <small class="text-muted">Virgülle ayırarak birden fazla host ekleyebilirsiniz.</small>
+            </div>
+            <button class="btn btn-primary w-100" type="submit">Kaydet</button>
+          </form>
+          <form method="POST" class="mt-3">
+            <input type="hidden" name="form" value="refresh_public_ip">
+            <button class="btn btn-outline-info w-100" type="submit">Sunucu IP'sini Otomatik Algıla ve Cloudflare'a Gönder</button>
+          </form>
+          <small class="text-muted">Bu işlem güncel public IP'yi tespit eder, ayarlarınıza işler ve Cloudflare DNS kayıtlarını yeni IP ile günceller.</small>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div>
+              <h5 class="card-title mb-1">Subdomain Maskeleri</h5>
+              <p class="text-muted mb-0">Gerçek subdomain'i gizlemek için rastgele alias üretin. Wildcard DNS kayıtlarınızın sunucuya yönlendiğinden emin olun.</p>
+            </div>
+          </div>
+          <form method="POST" class="row g-3">
+            <input type="hidden" name="form" value="domain_alias_add">
+            <div class="col-md-4">
+              <label for="baseDomain" class="form-label">Ana Domain</label>
+              <input type="text" class="form-control" id="baseDomain" name="base_domain" placeholder="sanexgroup.com" required>
+            </div>
+            <div class="col-md-4">
+              <label for="realSubdomain" class="form-label">Gerçek Subdomain</label>
+              <input type="text" class="form-control" id="realSubdomain" name="subdomain" placeholder="odeme" pattern="[a-z0-9-]+" autocomplete="off">
+              <small class="text-muted">Boş bırakırsanız ana domain kök kayıt olarak kullanılır.</small>
+            </div>
+            <div class="col-md-4">
+              <label for="maskedSubdomain" class="form-label">Maskelenmiş Subdomain</label>
+              <div class="input-group">
+                <input type="text" class="form-control" id="maskedSubdomain" name="masked_subdomain" placeholder="otomatik" pattern="[a-z0-9-]+" autocomplete="off">
+                <button class="btn btn-outline-secondary" type="button" id="generateAliasBtn">Üret</button>
+              </div>
+              <small class="text-muted">Boş bırakırsanız otomatik olarak uzun bir alias üretilir.</small>
+            </div>
+            <div class="col-12 text-end">
+              <button class="btn btn-success" type="submit">Alias Oluştur</button>
+            </div>
+          </form>
+          <hr>
+          <div class="table-responsive">
+            <table class="table table-striped align-middle">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Gerçek Host</th>
+                  <th>Maskelenmiş Host</th>
+                  <th>Paylaşılabilir URL</th>
+                  <th>İşlem</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% if domain_aliases %}
+                  {% for alias in domain_aliases %}
+                    <tr>
+                      <td class="text-muted">{{ loop.index }}</td>
+                      <td><code>{{ alias.target_host }}</code></td>
+                      <td><code>{{ alias.masked_host }}</code></td>
+                      <td>
+                        <div class="input-group">
+                          <input type="text" class="form-control" value="{{ alias.masked_url }}" readonly onclick="this.select()">
+                          <button class="btn btn-outline-secondary" type="button" onclick="navigator.clipboard.writeText('{{ alias.masked_url }}')">Kopyala</button>
+                        </div>
+                      </td>
+                      <td>
+                        <form method="POST" onsubmit="return confirm('Bu alias silinsin mi?')">
+                          <input type="hidden" name="form" value="domain_alias_delete">
+                          <input type="hidden" name="alias_id" value="{{ alias.id }}">
+                          <button class="btn btn-sm btn-outline-danger" type="submit">Sil</button>
+                        </form>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr>
+                    <td colspan="5" class="text-center text-muted">Henüz alias oluşturulmadı.</td>
+                  </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function() {
+      const btn = document.getElementById('generateAliasBtn');
+      if (!btn) return;
+      const input = document.getElementById('maskedSubdomain');
+      const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
+      btn.addEventListener('click', function() {
+        let token = '';
+        crypto.getRandomValues(new Uint32Array(32)).forEach(value => {
+          token += alphabet[value % alphabet.length];
+        });
+        input.value = token.substring(0, 26);
+        input.focus();
+        input.select();
+      });
+    })();
+  </script>
+{% endblock %}

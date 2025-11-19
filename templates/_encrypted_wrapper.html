@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="tr" class="encrypted-shell no-js">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+    <title>Güvenli içerik hazırlanıyor...</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preload" href="{{ decryptor_url }}" as="script">
+    <style>
+        :root {
+            color-scheme: light dark;
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at top, #eef4ff, #dae2f2);
+            color: #1d3557;
+        }
+        .encrypted-shell__status {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 18px;
+            padding: 2.5rem 3rem;
+            box-shadow: 0 20px 60px rgba(13, 38, 76, 0.15);
+            max-width: 460px;
+            width: calc(100% - 2rem);
+        }
+        .encrypted-shell__status p {
+            margin: 0;
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+        .encrypted-shell__spinner {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: 6px solid rgba(53, 119, 239, 0.15);
+            border-top-color: #2c6fff;
+            animation: spin 1s ease infinite;
+            margin: 0 auto 1rem;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .encrypted-shell__hint {
+            font-size: 0.875rem;
+            color: rgba(29, 53, 87, 0.75);
+            margin-top: 0.5rem;
+        }
+        .encrypted-shell__status--error {
+            border: 1px solid rgba(198, 40, 40, 0.2);
+            color: #b71c1c;
+        }
+    </style>
+</head>
+<body class="is-encrypted">
+<output class="encrypted-shell__status" aria-live="assertive">
+    <div class="encrypted-shell__spinner" aria-hidden="true"></div>
+    <p>Sayfa içerikleri şifreli olarak yüklendi. Lütfen birkaç saniye bekleyin.</p>
+    <p class="encrypted-shell__hint">İşlem cihazınızda otomatik olarak tamamlanacaktır.</p>
+</output>
+<div id="encrypted-root"
+     data-ciphertext="{{ payload.ciphertext }}"
+     data-iv="{{ payload.iv }}"
+     data-key="{{ payload.key }}"
+     data-mime="{{ payload.mime }}"
+     hidden></div>
+<script>
+    globalThis.__ENCRYPTED_RESPONSE__ = true;
+</script>
+<script src="{{ decryptor_url }}" defer></script>
+</body>
+</html>

