@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sqlite3
 from contextlib import contextmanager
-from typing import Any, Generator, Iterable, Optional
+from typing import Any, Generator, Optional, Sequence
 
 try:
     from psycopg import connect as pg_connect  # type: ignore
@@ -78,67 +78,68 @@ def _ensure_schema_sqlite(connection: sqlite3.Connection) -> None:
 
 
 def _ensure_schema_postgres(connection: Any) -> None:
-    cursor = connection.cursor()
-    for table_name, column_name, column_type, default in _SCHEMA_PATCHES:
-        cursor.execute(
-            """
-            SELECT 1
-            FROM information_schema.columns
-            WHERE table_schema = current_schema()
-              AND table_name = %s
-              AND column_name = %s
-            """,
-            (table_name, column_name),
-        )
-        if cursor.fetchone() is None:
-            cursor.execute(
-                f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type} DEFAULT {default}"
-            )
-    cursor.execute(
-        """
-        CREATE TABLE IF NOT EXISTS app_settings (
-            key TEXT PRIMARY KEY,
-            value TEXT
-        )
-        """
-    )
-    cursor.execute(
-        """
-        CREATE TABLE IF NOT EXISTS cloudflared_logs (
-            id BIGSERIAL PRIMARY KEY,
-            command TEXT NOT NULL,
-            stdout TEXT,
-            stderr TEXT,
-            status TEXT,
-            created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
-        )
-        """
-    )
-    cursor.execute(
-        """
-        CREATE TABLE IF NOT EXISTS domain_aliases (
-            id TEXT PRIMARY KEY,
-            base_domain TEXT NOT NULL,
-            subdomain TEXT NOT NULL DEFAULT '',
-            masked_subdomain TEXT NOT NULL,
-            created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
-        )
-        """
-    )
-    cursor.execute(
-        """
-        CREATE UNIQUE INDEX IF NOT EXISTS idx_domain_alias_masked
-            ON domain_aliases(masked_subdomain)
-        """
-    )
-    cursor.execute(
-        """
-        CREATE UNIQUE INDEX IF NOT EXISTS idx_domain_alias_real
-            ON domain_aliases(base_domain, subdomain)
-        """
-    )
-    connection.commit()
-    cursor.close()
+    # cursor = connection.cursor()
+    # for table_name, column_name, column_type, default in _SCHEMA_PATCHES:
+    #     cursor.execute(
+    #         """
+    #         SELECT 1
+    #         FROM information_schema.columns
+    #         WHERE table_schema = current_schema()
+    #           AND table_name = %s
+    #           AND column_name = %s
+    #         """,
+    #         (table_name, column_name),
+    #     )
+    #     if cursor.fetchone() is None:
+    #         cursor.execute(
+    #             f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type} DEFAULT {default}"
+    #         )
+    # cursor.execute(
+    #     """
+    #     CREATE TABLE IF NOT EXISTS app_settings (
+    #         key TEXT PRIMARY KEY,
+    #         value TEXT
+    #     )
+    #     """
+    # )
+    # cursor.execute(
+    #     """
+    #     CREATE TABLE IF NOT EXISTS cloudflared_logs (
+    #         id BIGSERIAL PRIMARY KEY,
+    #         command TEXT NOT NULL,
+    #         stdout TEXT,
+    #         stderr TEXT,
+    #         status TEXT,
+    #         created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+    #     )
+    #     """
+    # )
+    # cursor.execute(
+    #     """
+    #     CREATE TABLE IF NOT EXISTS domain_aliases (
+    #         id TEXT PRIMARY KEY,
+    #         base_domain TEXT NOT NULL,
+    #         subdomain TEXT NOT NULL DEFAULT '',
+    #         masked_subdomain TEXT NOT NULL,
+    #         created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+    #     )
+    #     """
+    # )
+    # cursor.execute(
+    #     """
+    #     CREATE UNIQUE INDEX IF NOT EXISTS idx_domain_alias_masked
+    #         ON domain_aliases(masked_subdomain)
+    #     """
+    # )
+    # cursor.execute(
+    #     """
+    #     CREATE UNIQUE INDEX IF NOT EXISTS idx_domain_alias_real
+    #         ON domain_aliases(base_domain, subdomain)
+    #     """
+    # )
+    # connection.commit()
+    # cursor.close()
+    pass
 
 
 def _ensure_schema(connection: Any) -> None:
@@ -156,8 +157,12 @@ def _row_to_dict(row: Any) -> dict[str, Any]:
     if row is None:
         return {}
     if isinstance(row, dict):
-        return row
-    return dict(row)
+        return dict(row)  # Ensure we return a dict, not the original object
+    # Handle sqlite3.Row or psycopg row objects
+    try:
+        return dict(row)
+    except (TypeError, ValueError):
+        return {}
 
 
 def _prepare_query(query: str) -> str:
@@ -176,6 +181,10 @@ def get_connection() -> Any:
     else:
         connection = sqlite3.connect(AppConfig.database_path)
         connection.row_factory = sqlite3.Row
+
+    # Ensure schema is up to date on every connection
+    _ensure_schema(connection)
+
     return connection
 
 
@@ -190,22 +199,22 @@ def get_cursor() -> Generator[sqlite3.Cursor, None, None]:
         connection.close()
 
 
-def execute(query: str, params: Optional[Iterable[Any]] = None) -> int:
+def execute(query: str, params: Optional[Sequence[Any]] = None) -> int:
     with get_cursor() as cursor:
-        cursor.execute(_prepare_query(query), params or ())
+        cursor.execute(_prepare_query(query), params or [])
         last_insert_id = getattr(cursor, "lastrowid", None)
         return int(last_insert_id or 0)
 
 
-def fetch_one(query: str, params: Optional[Iterable[Any]] = None) -> Optional[dict[str, Any]]:
+def fetch_one(query: str, params: Optional[Sequence[Any]] = None) -> dict[str, Any]:
     with get_cursor() as cursor:
-        cursor.execute(_prepare_query(query), params or ())
+        cursor.execute(_prepare_query(query), params or [])
         row = cursor.fetchone()
-        return _row_to_dict(row) if row else None
+        return _row_to_dict(row)
 
 
-def fetch_all(query: str, params: Optional[Iterable[Any]] = None) -> list[dict[str, Any]]:
+def fetch_all(query: str, params: Optional[Sequence[Any]] = None) -> list[dict[str, Any]]:
     with get_cursor() as cursor:
-        cursor.execute(_prepare_query(query), params or ())
+        cursor.execute(_prepare_query(query), params or [])
         rows = cursor.fetchall()
         return [_row_to_dict(row) for row in rows]
