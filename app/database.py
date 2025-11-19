@@ -176,7 +176,6 @@ def get_connection() -> Any:
     else:
         connection = sqlite3.connect(AppConfig.database_path)
         connection.row_factory = sqlite3.Row
-    _ensure_schema(connection)
     return connection
 
 
